@@ -94,6 +94,9 @@ client.get_processed_correlations(theme="crypto", min_correlation=0.5)
 
 # Stock betas with R² filtering
 client.get_processed_stock_betas(stock_ticker="AAPL", min_r_squared=0.3)
+
+# Factor trade impacts - see which markets drive stock factor betas
+client.get_factor_trade_impacts(stock_ticker="NVDA", top_n=10, factor_filter="Tech")
 ```
 
 ## Advanced Usage
@@ -201,6 +204,46 @@ correlations = client.get_processed_correlations(
 print(f"Found {len(correlations['items'])} strong correlations for AAPL:")
 for corr in correlations["items"][:10]:
     print(f"  {corr['market_ticker']}: {corr['pearson_correlation']:.3f}")
+```
+
+### Example 4: Analyze Which Markets Drive Stock Factor Exposures
+
+```python
+from predictmarket import Client
+
+client = Client(api_key="pk_live_xxx")
+
+# Get the top markets driving NVDA's factor exposures
+impacts = client.get_factor_trade_impacts(
+    stock_ticker="NVDA",
+    top_n=10
+)
+
+print(f"\nStock: {impacts['stockTicker']}")
+print(f"Factor Betas: {impacts['betas']}")
+print(f"\nTop {len(impacts['topImpacts'])} Contributing Markets:")
+
+for impact in impacts["topImpacts"]:
+    print(f"\n{impact['marketTitle']}")
+    print(f"  Factor: {impact['factorCategory']}")
+    print(f"  Beta: {impact['beta']:.6f}")
+    print(f"  Relative Weight: {impact['relativeWeight']:.2%}")
+    print(f"  Contribution: {impact['contribution']:.6f}")
+    if impact['recentPrice']:
+        print(f"  Recent Price: {impact['recentPrice']:.2f}")
+    if impact['priceChange']:
+        print(f"  Price Change: {impact['priceChange']:.2f}%")
+
+# Get impacts for a specific factor only
+tech_impacts = client.get_factor_trade_impacts(
+    stock_ticker="NVDA",
+    top_n=5,
+    factor_filter="Tech"
+)
+
+print(f"\nTop Tech Factor Markets for NVDA:")
+for impact in tech_impacts["impactsByFactor"]["Tech"]["topImpacts"]:
+    print(f"  - {impact['marketTitle']}: {impact['relativeWeight']:.2%}")
 ```
 
 ## API Reference

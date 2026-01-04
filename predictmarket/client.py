@@ -559,6 +559,65 @@ class Client:
         params = {k: v for k, v in params.items() if v is not None}
         return self._request("GET", "/v1/processed/stock-factor-betas", params=params)
 
+    def get_factor_trade_impacts(
+        self,
+        stock_ticker: str,
+        top_n: Optional[int] = None,
+        factor_filter: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Get the prediction markets that contributed to a stock's factor betas.
+
+        This endpoint identifies which specific prediction markets drive the
+        factor exposures for a given stock, showing their relative contributions
+        and recent price movements.
+
+        Args:
+            stock_ticker: Stock ticker (required)
+            top_n: Number of top contributing markets to return (optional, default: 20 on server)
+            factor_filter: Optional factor to filter by (e.g., "Tech", "Politics", "Macro", "Crypto")
+
+        Returns:
+            Response with:
+            - success: Boolean indicating success
+            - stockTicker: The requested stock ticker
+            - betas: Dictionary of the stock's factor betas
+            - topImpacts: List of top N markets by contribution
+            - impactsByFactor: Breakdown of impacts by factor category
+            - totalMarketsAnalyzed: Total number of markets analyzed
+
+        Example:
+            # Get top contributing markets for NVDA (uses server default)
+            impacts = client.get_factor_trade_impacts(stock_ticker="NVDA")
+
+            # Get top 10 contributing markets for NVDA
+            impacts = client.get_factor_trade_impacts(
+                stock_ticker="NVDA",
+                top_n=10
+            )
+
+            # Filter for only Tech factor impacts
+            tech_impacts = client.get_factor_trade_impacts(
+                stock_ticker="NVDA",
+                top_n=5,
+                factor_filter="Tech"
+            )
+
+            # Process results
+            for impact in impacts["topImpacts"]:
+                print(f"{impact['marketTitle']}: {impact['contribution']:.4f}")
+                print(f"  Factor: {impact['factorCategory']}")
+                print(f"  Relative Weight: {impact['relativeWeight']:.2%}")
+        """
+        body = {"stockTicker": stock_ticker}
+
+        if top_n is not None:
+            body["topN"] = top_n
+        if factor_filter:
+            body["factorFilter"] = factor_filter
+
+        return self._request("POST", "/v1/processed/factor-trade-impacts", json=body)
+
     # ===== UTILITY METHODS =====
 
     def health_check(self) -> Dict[str, Any]:
