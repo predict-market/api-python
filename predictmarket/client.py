@@ -609,14 +609,14 @@ class Client:
                 print(f"  Factor: {impact['factorCategory']}")
                 print(f"  Relative Weight: {impact['relativeWeight']:.2%}")
         """
-        body = {"stockTicker": stock_ticker}
+        params = {"stock_ticker": stock_ticker}
 
         if top_n is not None:
-            body["topN"] = top_n
+            params["top_n"] = top_n
         if factor_filter:
-            body["factorFilter"] = factor_filter
+            params["factor_filter"] = factor_filter
 
-        return self._request("POST", "/v1/processed/factor-trade-impacts", json=body)
+        return self._request("GET", "/v1/processed/factor-trade-impacts", params=params)
 
     # ===== UTILITY METHODS =====
 
